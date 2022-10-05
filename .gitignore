@@ -1,2 +1,2 @@
-/.env
-/flask_market/__pycache__
+/env
+/flask_market/market/__pycache__
