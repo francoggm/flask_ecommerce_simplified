@@ -1,6 +1,7 @@
-from market import db
+from market import db, bcrypt
+from flask_login import UserMixin
 
-class User(db.Model):
+class User(db.Model, UserMixin):
     id = db.Column(db.Integer(), primary_key=True)
     username = db.Column(db.String(length=30), unique=True, nullable=False)
     email = db.Column(db.String(length=100), unique=True, nullable=False)
@@ -8,6 +9,23 @@ class User(db.Model):
     budget = db.Column(db.Integer(), nullable=False, default=1000)
     items = db.relationship('Item', backref='owned_user', lazy=True)
 
+    @property
+    def prettier_budget(self):
+        if len(str(self.budget)) >= 4:
+            return f'{str(self.budget)[:-3]},{str(self.budget)[-3:]}$'
+        return f'{self.budget}$'
+
+    @property
+    def password(self):
+        return self.password_hash
+    
+    @password.setter
+    def password(self, plain_text_password):
+        self.password_hash = bcrypt.generate_password_hash(plain_text_password).decode('utf-8')
+    
+    def check_password_correction(self, attempted_password):
+        return bcrypt.check_password_hash(self.password, attempted_password)
+            
 class Item(db.Model):
     id = db.Column(db.Integer(), primary_key=True)
     name = db.Column(db.String(length=30), nullable=False, unique=True)
