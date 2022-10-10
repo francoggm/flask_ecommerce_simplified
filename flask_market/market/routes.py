@@ -2,17 +2,18 @@ from flask import render_template, Blueprint, redirect, url_for, flash
 from .models import Item, User
 from . import db
 from .forms import RegisterForm, LoginForm
-from flask_login import login_user, current_user
+from flask_login import login_user, current_user, logout_user, login_required
 
 routes = Blueprint('routes', __name__)
 
 @routes.route('/')
 @routes.route('/home')
+@login_required
 def home_page():
-    print(current_user.password)
     return render_template('home.html')
 
 @routes.route('/market')
+@login_required
 def market_page():
     items = Item.query.all()
     return render_template('market.html', items=items)
@@ -28,7 +29,9 @@ def register_page():
         )
         db.session.add(user_to_create)
         db.session.commit()
-        return redirect(url_for('routes.market_page'))
+        flash('Successfuly registered!', category='success')
+        login_user(user_to_create)
+        return redirect(url_for('routes.home_page'))
 
     if form.errors:
         for err_msg in form.errors.values():
@@ -51,3 +54,11 @@ def login_page():
         for err_msg in form.errors.values():
             flash(err_msg, category='danger')
     return render_template('login.html', form=form)
+
+@routes.route('/logout')
+def logout_page():
+    if current_user.is_authenticated:
+        logout_user()
+        flash('You have been logged out!', category='info')
+    return redirect(url_for('routes.home_page'))
+    

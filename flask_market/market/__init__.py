@@ -14,6 +14,8 @@ app.config['SECRET_KEY'] = 'ecf9db4de02eb105a1713893'
 db = SQLAlchemy(app)
 bcrypt = Bcrypt(app)
 login_manager = LoginManager(app)
+login_manager.login_view = 'routes.login_page'
+login_manager.login_message_category = 'info'
 
 from .routes import routes
 app.register_blueprint(routes, url_prefix='/')
@@ -24,6 +26,8 @@ create_db(db)
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
+
+
 
 
 
